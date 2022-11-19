@@ -1,0 +1,9 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: 'junit-testing'
+  h2:
+    console:
+      enabled: true
