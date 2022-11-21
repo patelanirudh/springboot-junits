@@ -1,5 +1,8 @@
 package com.boot.junit.model;
 
+import lombok.ToString;
+
+@ToString
 public class UserRest {
     private String userId;
     private String firstName;

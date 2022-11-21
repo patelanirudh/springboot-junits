@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -58,6 +58,24 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <active.profile>default</active.profile>
+            </properties>
+        </profile>
+        <profile>
+            <id>integration</id>
+            <properties>
+                <active.profile>integration</active.profile>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>

@@ -76,4 +76,17 @@ public class UsersServiceImpl implements UsersService {
 
         return returnValue;
     }
+
+    @Override
+    public UserDto getUserByLastName(String lastName) {
+        UserEntity userEntity = usersRepository.findByLastName(lastName);
+
+        if (userEntity == null)
+            throw new UsersServiceException("User not found for lastName " + lastName);
+
+        UserDto returnValue = new UserDto();
+        BeanUtils.copyProperties(userEntity, returnValue);
+
+        return returnValue;
+    }
 }

@@ -7,10 +7,7 @@ import com.boot.junit.service.UsersService;
 import com.boot.junit.service.UsersServiceImpl;
 import com.boot.junit.shared.UserDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,12 +23,14 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @WebMvcTest(controllers = UsersController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
-// if we have Spring Security : tell Spring Security to autoconfigure create MockWebMvc but without security filters
+// if we have Spring Security : tell Spring Security to autoconfigure MockWebMvc but without security filters
 // Present by default in above WebMvcTest annotation. We may also excludeSpringSecurity configuration above.
-// @AutoConfigureMockMvc(addFilters = false)
+// @AutoConfigureMockMvc(addFilters = false) // disables Spring Security filters
 @MockBean(classes = {UsersServiceImpl.class}) // can provide all impl's of userService interface
 public class UsersControllerWebLayerTest {
 
@@ -40,7 +39,7 @@ public class UsersControllerWebLayerTest {
     private MockMvc mockMvc;
 
     // mocks the interface, if there is only 1 IMPLEMENTATION CLASS. Loads the BEAN in Spring's app context
-    // Else shift thus to class and provide list of all IMPLEMENTATION CLASSES
+    // Else shift this to testClass declaration and provide list of all IMPLEMENTATION CLASSES
     // @MockBean
     // UsersService userService;
 
@@ -65,7 +64,6 @@ public class UsersControllerWebLayerTest {
         // UserDetailsRequestModel has been created in @BeforeEachTestMethod()
 
 //        UserDto userDto = new UserDto();
-//        userDto.setUserId("DuumyId");
 //        userDto.setFirstName("Shilpi");
 //        userDto.setLastName("Patel");
 //        userDto.setEmail("shilpi@pagli.com");
@@ -129,6 +127,34 @@ public class UsersControllerWebLayerTest {
 
         // Assert
         Assertions.assertEquals(expectedHttpStatusCode, mvcResult.getResponse().getStatus(), "Incorrect Http Status Code Returned");
+    }
+
+    @DisplayName("Get User By Email")
+    @Test
+    void testGetUser_whenEmailNameGiven_returnStoredUser() throws Exception {
+        // Arrange
+        String emailNameToSearch = "shilpi@pagli.com";
+        int expectedHttpStatusCode = HttpStatus.OK.value();
+        UserDto storedUser = new ModelMapper().map(requestModel, UserDto.class);
+        storedUser.setUserId(UUID.randomUUID().toString());
+        when(usersService.getUser(anyString())).thenReturn(storedUser);
+
+        // Act
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/users/email")
+//                .param("emailName", emailNameToSearch) // this also works, how???
+                .queryParam("emailName", emailNameToSearch)
+                .accept(MediaType.APPLICATION_JSON);
+
+//      MvcResult mvcResult = mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
+        MvcResult mvcResult = mockMvc.perform(requestBuilder).andDo(print()).andReturn();
+
+        String userAsString = mvcResult.getResponse().getContentAsString();
+        UserRest returnedUser = new ObjectMapper().readValue(userAsString, UserRest.class);
+
+        // Assert
+        Assertions.assertEquals(expectedHttpStatusCode, mvcResult.getResponse().getStatus(), "200 OK status code should be returned");
+        Assertions.assertEquals(requestModel.getFirstName(), returnedUser.getFirstName(), "FirstName should match");
+        Assertions.assertFalse(returnedUser.getUserId().isEmpty(), "UserId should not be empty");
     }
 
 }

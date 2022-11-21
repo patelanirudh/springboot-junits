@@ -44,4 +44,20 @@ public class UsersController {
 
         return new ModelMapper().map(users, listType);
     }
+
+    @GetMapping(path = "/email")
+    public UserRest getUser(@RequestParam(value = "emailName", required = true) String emailName) {
+        System.out.println("EmailName : " + emailName);
+        UserDto returnedUser = usersService.getUser(emailName);
+
+        return new ModelMapper().map(returnedUser, UserRest.class);
+    }
+
+    @GetMapping(path = "/names/{lastName}")
+    public UserRest getUserByEmail(@PathVariable(value = "lastName", required = true) String lastName) {
+        System.out.println("lastName : " + lastName);
+        UserDto returnedUser = usersService.getUserByLastName(lastName);
+
+        return new ModelMapper().map(returnedUser, UserRest.class);
+    }
 }
